@@ -3,30 +3,35 @@ using System.Diagnostics;
 using System.IO;
 using System;
 using System.Net;
+using System.Reflection;
 using System.Xml;
-using MVC.Translator;
-using MVC;
-using Translator;
+using System.Xml.Schema;
 namespace Updater {
 
     public class Updater {
         // The update urls
         private List<string> update_sources;
        
-        private DataUpdates data;
-        private ProgramUpdates program;
+        public DataUpdates Data;
+        public ProgramUpdates Program;
+        private IVersionSource VersionSource;
 
-        public Updater() {
+        public Updater(IVersionSource version_source, string data_folder) {
+            this.Data = new DataUpdates(data_folder);
+            this.Program = new ProgramUpdates();
+            this.VersionSource = version_source;
         }
 
         public UpdateAvailability checkUpdates() {
             if (!checkConnection())
                 return UpdateAvailability.None;
 
-            string updates_file = Path.Combine(Core.ExecutablePath, "updates.xml");
+            string folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
+            string updates_file = Path.Combine(folder, "updates.xml");
 
             if (!File.Exists(updates_file)) {
-                throw new TranslateableException("FileNotFoundCritical","updates.xml");
+                throw new FileNotFoundException("updates.xml");
             }
 
             XmlReaderSettings xml_settings = new XmlReaderSettings();
@@ -40,7 +45,7 @@ namespace Updater {
             try {
                 document.Load(reader);
             } catch (XmlException e) {
-                throw new TranslateableException("FileCorruptedCritical", e, updates_file);
+                throw new FileCorruptedException(updates_file, e);
             } finally {
                 reader.Close();
                 stream.Close();
@@ -54,7 +59,7 @@ namespace Updater {
             }
 
             if (updates_node == null) {
-                throw new TranslateableException("FileCorruptedCritical", updates_file);
+                throw new FileCorruptedException(updates_file);
             }
 
             //this.Add(new UpdateHandler(updates_node,"updates.xml",updates_file));
@@ -71,8 +76,6 @@ namespace Updater {
 
             WebClient Client = new WebClient();
 
-            this.data = new DataUpdates();
-            this.program = new ProgramUpdates();
 
 
             foreach (string update_source in update_sources) {
@@ -108,10 +111,10 @@ namespace Updater {
                     try {
                         switch (element.Name) {
                             case "program":
-                                program.Add(new ProgramUpdate(element));
+                                Program.Add(new ProgramUpdate(element,VersionSource));
                                 break;
-                            case "file":
-                                data.Add(new DataUpdate(element));
+                            case "data":
+                                Data.Add(new DataUpdate(element,VersionSource));
                                 break;
                         }
                     } catch (Exception e) {
@@ -121,23 +124,15 @@ namespace Updater {
                 }
             }
 
-            if (program.UpdateAvailable&&data.UpdateAvailable) {
+            if (Program.UpdateAvailable&&Data.UpdateAvailable) {
                 return UpdateAvailability.DataAndProgram;
-            } else if (program.UpdateAvailable) {
+            } else if (Program.UpdateAvailable) {
                 return UpdateAvailability.Program;
-            } else if (data.UpdateAvailable) {
+            } else if (Data.UpdateAvailable) {
                 return UpdateAvailability.Data;
             }
             return UpdateAvailability.None;
 
-        }
-
-        public bool downloadProgramUpdate() {
-            return program.Update();
-        }
-
-        public bool downloadDataUpdates() {
-            return data.Update();
         }
 
         private bool checkConnection() {

@@ -30,6 +30,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Updater.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -40,8 +46,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="AUpdate.cs" />
+    <Compile Include="AUpdates.cs" />
+    <Compile Include="DataUpdate.cs" />
+    <Compile Include="DataUpdates.cs" />
+    <Compile Include="FileCorruptedException.cs" />
+    <Compile Include="IVersionSource.cs" />
+    <Compile Include="NoVersionInfoException.cs" />
+    <Compile Include="ProgramUpdate.cs" />
+    <Compile Include="ProgramUpdates.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UpdateAvailability.cs" />
+    <Compile Include="Updater.cs" />
+    <Compile Include="IFileVersion.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UpdateList.xsd" />
+    <None Include="Updater.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Logger\Logger.csproj">
+      <Project>{CD1B810F-38EC-41CE-974F-7B0EE5CD8B87}</Project>
+      <Name>Logger</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

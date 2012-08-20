@@ -3,25 +3,46 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Xml;
-using MVC.Translator;
-using MVC;
-using XmlData;
+
 namespace Updater {
     public abstract class AUpdate: IComparable<AUpdate> {
+        protected bool HasBeenUpdated = false;
+
+        public Version Version { get; protected set; }
+
+
+        public string Type { get; protected set; }
+        public string Name { get; protected set; }
+
+
         public DateTime Date { get; protected set; }
         public List<Uri> URLs { get; protected set; }
-
-        protected AUpdate(XmlElement xml) {
+        protected IVersionSource versions;
+        protected AUpdate(XmlElement xml, IVersionSource versions) {
             URLs = new List<Uri>();
+            this.versions = versions;
             this.Date = DateTime.Parse(xml.Attributes["date"].Value);
+
+            Name = xml.Attributes["name"].Value;
+
+            if (xml.HasAttribute("date"))
+                this.Date = DateTime.Parse(xml.Attributes["date"].Value);
+
+            if (xml.HasAttribute("majorVersion") && xml.HasAttribute("minorVersion") && xml.HasAttribute("revision"))
+                this.Version = new Version(Int32.Parse(xml.Attributes["majorVersion"].Value), Int32.Parse(xml.Attributes["minorVersion"].Value), Int32.Parse(xml.Attributes["revision"].Value));
+
+
             addURL(xml);
         }
 
         public void addURL(XmlElement xml) {
-            if (xml.HasAttribute("url"))
+
                 this.URLs.Add(new Uri(xml.Attributes["url"].Value));
-            else
-                throw new KeyNotFoundException();
+
+
+
+
+
         }
         public void addURL(AUpdate update) {
             this.URLs.AddRange(update.URLs);
@@ -30,8 +51,13 @@ namespace Updater {
         public abstract bool UpdateAvailable { get; }
         public abstract int CompareTo(AUpdate update);
         public abstract string getName();
-        public abstract bool Update();
+        public bool Update() {
+            bool result = performUpdate();
+            HasBeenUpdated = true;
+            return result;
+        }
 
+        protected abstract bool performUpdate();
 
         protected string downloadFile(Uri url) {
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(url);
@@ -62,32 +88,27 @@ namespace Updater {
         }
 
         protected bool downloadHelper(string target) {
-            string tmp_name = null;
+            FileInfo tmp_file = null;
             foreach (Uri url in URLs) {
                 try {
-                    tmp_name = downloadFile(url);
-
-                    
-                    XmlFile game_config;
-                    try {
-                        game_config = new XmlFile(new FileInfo(tmp_name), false);
-                    } catch (Exception e) {
+                    tmp_file = new FileInfo(downloadFile(url));                    
+                    if (!versions.ValidateFile(tmp_file,url)) {
                         Logger.Logger.log("Error while downloading " + url.ToString());
-                        Logger.Logger.log(e);
-                        File.Delete(tmp_name);
+                        tmp_file.Delete();
                         continue;
                     }
+
 
 
                     if (File.Exists(target))
                         File.Delete(target);
 
-                    File.Move(tmp_name, target);
+                    tmp_file.MoveTo(target);
                     break;
                 } catch (Exception exception) {
                     Logger.Logger.log(exception);
-                    if(File.Exists(tmp_name))
-                        File.Delete(tmp_name);
+                    if (tmp_file != null && tmp_file.Exists)
+                        tmp_file.Delete();
                     return false;
                 }
             }

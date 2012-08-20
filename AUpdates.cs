@@ -2,52 +2,75 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MVC.Communication;
-using MVC.Translator;
+
 namespace Updater {
-    abstract class AUpdates<T>: Dictionary<string,T> where T: AUpdate {
+    public abstract class AUpdates<T>: List<T> where T: AUpdate {
 
-        public void Add(T item) {
-            if(this.ContainsKey(item.getName())) {
-                T existing = this[item.getName()];
-
+        public new void Add(T item) {
+            int i = checkForFile(item);
+            if (i != -1) {
+                T existing = this[i];
                 int result = existing.CompareTo(item);
                 if (result == 0) {
                     existing.addURL(item);
                 } else if (result < 0) {
-                    this[item.getName()] = item;
+                    this[i] = item;
                 }
             } else {
-                this.Add(item.getName(),item);
+                base.Add(item);
             }
+        }
+
+        private int checkForFile(T item) {
+            for (int i = 0; i < this.Count; i++) {
+                if (this[i].getName() == item.getName())
+                    return i;
+            }
+            return -1;
         }
 
         public bool UpdateAvailable {
             get {
-                foreach (T item in this.Values) {
-                    if (item.UpdateAvailable)
-                        return true;
-                }
-                return false;
+                return NextUpdate !=null;
             }
         }
 
-        public bool Update() {
-            ProgressHandler.value = 0;
-            ProgressHandler.max = this.Count;
-            try {
-                foreach (T item in this.Values) {
-                    ProgressHandler.value++;
-                    TranslatingProgressHandler.setTranslatedMessage("UpdatingFile", item.getName());
-                    if(item.UpdateAvailable)
-                        item.Update();
+        public int UpdateCount {
+            get {
+                int i = 0;
+                foreach (T item in this) {
+                    if (item.UpdateAvailable)
+                        i++;
                 }
-                return true;
-            } catch (Exception e) {
-                Logger.Logger.log(e);
-                return false;
+                return i;
             }
         }
+        private AUpdate NextUpdate {
+            get {
+                if (this.Count == 0)
+                    return null;
+                foreach(T item in this) {
+                    if(item.UpdateAvailable)
+                        return item;
+                }
+                return null;
+            }
+        }
+
+        public string NextUpdateName {
+            get {
+                if (NextUpdate == null)
+                    return null;
+                return NextUpdate.getName();
+            }
+        }
+
+        public void DownloadNextUpdate() {
+            if (UpdateAvailable) {
+                NextUpdate.Update();
+            }
+        }
+
 
     }
 }

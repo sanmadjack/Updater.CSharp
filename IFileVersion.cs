@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 
 namespace Updater {
-    public class ProgramUpdates: AUpdates<ProgramUpdate> {
-
+    public interface IFileVersion {
+        Version Version { get; }
+        DateTime Date { get; }
     }
 }

@@ -5,19 +5,16 @@ using System.Text;
 using System.Xml;
 using System.Web;
 using System.IO;
-using GameSaveInfo;
 namespace Updater {
-    class DataUpdate: AUpdate {
-        public string Name { get; protected set; }
+    public class DataUpdate: AUpdate {
+        public string DownloadFolder;
 
-        public DataUpdate(XmlElement xml): base(xml) {
-            this.Name = xml.Attributes["name"].Value;
-
+        public DataUpdate(XmlElement xml, IVersionSource versions): base(xml, versions) {
         }
 
-        public override bool Update() {
+        protected override bool performUpdate() {
 //            GameXmlFile file = Games.xml.getFile(this.Name);
-            return this.downloadHelper(Path.Combine(Games.GameDataFolder,this.Name));
+            return this.downloadHelper(Path.Combine(DownloadFolder,this.Name));
         }
 
         public override int CompareTo(AUpdate update) {
@@ -30,11 +27,18 @@ namespace Updater {
 
         public override bool UpdateAvailable {
             get {
-                GameXmlFile file = Games.xml.getFile(this.Name);
-                if (file == null)
-                    return true;
+                if (HasBeenUpdated)
+                    return false;
 
-                return this.Date > file.date;                    
+                
+                if (versions.GetFileVersion(this.Name) != null) {
+                    return this.Version > versions.GetFileVersion(this.Name);
+                }
+                if (versions.GetFileDate(this.Name) != null) {
+                    return this.Date > versions.GetFileDate(this.Name);
+                }
+                return true;
+//                throw new NoVersionInfoException(file);
             }
         }
 
