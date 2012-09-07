@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System;
 using System.Net;
 using System.Reflection;
 using System.Xml;
-using System.Xml.Schema;
 namespace Updater {
 
     public class Updater {
         // The update urls
         private List<string> update_sources;
-       
+
         public DataUpdates Data;
         public ProgramUpdates Program;
         private IVersionSource VersionSource;
@@ -103,7 +101,7 @@ namespace Updater {
 
                 if (files_node == null) {
                     Logger.Logger.log(update_source + "seems to be missing the files tag");
-//                    TranslatingMessageHandler.SendWarning("XMLErrorMissingTag","files", update_source);
+                    //                    TranslatingMessageHandler.SendWarning("XMLErrorMissingTag","files", update_source);
                     continue;
                 }
 
@@ -111,10 +109,10 @@ namespace Updater {
                     try {
                         switch (element.Name) {
                             case "program":
-                                Program.Add(new ProgramUpdate(element,VersionSource));
+                                Program.Add(new ProgramUpdate(element, VersionSource));
                                 break;
                             case "data":
-                                Data.Add(new DataUpdate(element,VersionSource));
+                                Data.Add(new DataUpdate(element, VersionSource));
                                 break;
                         }
                     } catch (Exception e) {
@@ -124,7 +122,7 @@ namespace Updater {
                 }
             }
 
-            if (Program.UpdateAvailable&&Data.UpdateAvailable) {
+            if (Program.UpdateAvailable && Data.UpdateAvailable) {
                 return UpdateAvailability.DataAndProgram;
             } else if (Program.UpdateAvailable) {
                 return UpdateAvailability.Program;

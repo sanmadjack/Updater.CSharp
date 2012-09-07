@@ -5,7 +5,7 @@ using System.Net;
 using System.Xml;
 
 namespace Updater {
-    public abstract class AUpdate: IComparable<AUpdate> {
+    public abstract class AUpdate : IComparable<AUpdate> {
         protected bool HasBeenUpdated = false;
 
         public Version Version { get; protected set; }
@@ -37,7 +37,7 @@ namespace Updater {
 
         public void addURL(XmlElement xml) {
 
-                this.URLs.Add(new Uri(xml.Attributes["url"].Value));
+            this.URLs.Add(new Uri(xml.Attributes["url"].Value));
 
 
 
@@ -91,8 +91,8 @@ namespace Updater {
             FileInfo tmp_file = null;
             foreach (Uri url in URLs) {
                 try {
-                    tmp_file = new FileInfo(downloadFile(url));                    
-                    if (!versions.ValidateFile(tmp_file,url)) {
+                    tmp_file = new FileInfo(downloadFile(url));
+                    if (!versions.ValidateFile(tmp_file, url)) {
                         Logger.Logger.log("Error while downloading " + url.ToString());
                         tmp_file.Delete();
                         continue;

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Updater {
-    public abstract class AUpdates<T>: List<T> where T: AUpdate {
+    public abstract class AUpdates<T> : List<T> where T : AUpdate {
 
         public new void Add(T item) {
             int i = checkForFile(item);
@@ -31,7 +28,7 @@ namespace Updater {
 
         public bool UpdateAvailable {
             get {
-                return NextUpdate !=null;
+                return NextUpdate != null;
             }
         }
 
@@ -49,8 +46,8 @@ namespace Updater {
             get {
                 if (this.Count == 0)
                     return null;
-                foreach(T item in this) {
-                    if(item.UpdateAvailable)
+                foreach (T item in this) {
+                    if (item.UpdateAvailable)
                         return item;
                 }
                 return null;

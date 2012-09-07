@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Xml;
 namespace Updater {
-    public class ProgramUpdate: AUpdate {
+    public class ProgramUpdate : AUpdate {
         public override bool UpdateAvailable {
             get {
                 if (HasBeenUpdated)
@@ -33,7 +30,8 @@ namespace Updater {
 
         public string OS { get; protected set; }
 
-        public ProgramUpdate(XmlElement xml, IVersionSource source): base(xml,source) {
+        public ProgramUpdate(XmlElement xml, IVersionSource source)
+            : base(xml, source) {
             this.OS = xml.Attributes["os"].Value;
 
         }
@@ -42,7 +40,7 @@ namespace Updater {
             foreach (Uri url in URLs) {
                 try {
                     System.Diagnostics.Process.Start(url.ToString());
-                        return true;
+                    return true;
                 } catch (Exception e) {
                     Logger.Logger.log(e);
                     continue;
