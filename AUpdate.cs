@@ -51,6 +51,9 @@ namespace Updater {
         public abstract bool UpdateAvailable { get; }
         public abstract int CompareTo(AUpdate update);
         public abstract string getName();
+        public abstract string getPath();
+
+
         public bool Update() {
             bool result = performUpdate();
             HasBeenUpdated = true;
@@ -83,6 +86,8 @@ namespace Updater {
 
             local_file.Close();
             remote_file.Close();
+
+
 
             return tmp_name;
         }

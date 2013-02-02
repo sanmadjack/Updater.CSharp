@@ -61,11 +61,19 @@ namespace Updater {
                 return NextUpdate.getName();
             }
         }
-
-        public void DownloadNextUpdate() {
-            if (UpdateAvailable) {
-                NextUpdate.Update();
+        public string NextUpdatePath {
+            get {
+                if (NextUpdate == null)
+                    return null;
+                return NextUpdate.getPath();
             }
+        }
+
+        public bool DownloadNextUpdate() {
+            if (UpdateAvailable) {
+                return NextUpdate.Update();
+            }
+            return false;
         }
 
 

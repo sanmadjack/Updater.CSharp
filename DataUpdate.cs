@@ -10,7 +10,7 @@ namespace Updater {
 
         protected override bool performUpdate() {
             //            GameXmlFile file = Games.xml.getFile(this.Name);
-            return this.downloadHelper(Path.Combine(DownloadFolder, this.Name));
+            return this.downloadHelper(getPath());
         }
 
         public override int CompareTo(AUpdate update) {
@@ -19,6 +19,10 @@ namespace Updater {
 
         public override string getName() {
             return Name;
+        }
+
+        public override string getPath() {
+            return Path.Combine(DownloadFolder, this.Name);
         }
 
         public override bool UpdateAvailable {

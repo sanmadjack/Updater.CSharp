@@ -27,6 +27,10 @@ namespace Updater {
             return OS;
         }
 
+        public override string getPath() {
+            return OS;
+        }
+
 
         public string OS { get; protected set; }
 
